@@ -1,24 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+
+import Header from "./components/Header";
+import Converter from "./components/Converter";
 
 function App() {
+  const [isLoading, setLoading] = useState(true);
+  const [currencies, setCurrencies] = useState({});
+
+  useEffect(() => {
+    Promise.all([
+      fetch(
+        "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/eur.json"
+      ),
+      fetch(
+        "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/usd.json"
+      ),
+      fetch(
+        "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/uah.json"
+      ),
+    ])
+      .then((results) => Promise.all(results.map((r) => r.json())))
+      .then(([{ eur }, { usd }, { uah }]) => {
+        setCurrencies({ usd, eur, uah });
+        setLoading(false);
+      });
+  }, []);
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Header currencies={currencies} />
+      <Converter currencies={currencies} />
+    </>
   );
 }
 
